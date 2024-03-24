@@ -87,10 +87,6 @@ def benchmark(seq_len, provider):
     create_pos_emb = te.attention.RotaryPositionEmbedding(FEATURE_DIM)
     sample_freq = create_pos_emb(SEQ_LEN).to("cuda")
 
-    print(sample_freq[0][0][0][0])
-    print(sample_freq[32][0][0][0])
-    exit()
-
     quantiles = [0.5, 0.2, 0.8]
     if provider == "transformer_engine":
         ms, min_ms, max_ms = triton.testing.do_bench(

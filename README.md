@@ -22,7 +22,7 @@ transformer_engine을 새로운 버전으로 설치하려 하였으나 RAM 32g�
 ---
 
 ```bash
-docker run --gpus all -it --name ai_compiler nvcr.io/nvidia/pytorch:24.02-py3
+docker run --gpus all -it --rm --name ai_compiler nvcr.io/nvidia/pytorch:24.02-py3
 git clone https://github.com/han811/AI_Compiler.git
 cd AI_Compiler
 python3 main.py
