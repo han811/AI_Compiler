@@ -35,7 +35,6 @@ python3 main.py
 여기서 RoPE가 적용되려면 head_dim 축의 모든 feature들이 필요로 함으로 block의 크기를 head_dim과 같도록 설정하였고, 나머지 축들은 곱셈으로 다 합쳐서 하나의 축이 되도록 grid를 설정하여 병렬연산을 하도록 하였습니다.
 
 ### Result
-<img src="./experiment.png">
 ![experiment result](./experiment.png)  
 위의 결과를 보면 triton kernel로 구현한 코드가 더 빠른 시간 안에 RoPE 연산을 수행하는 것을 볼 수 있습니다.  
 이를 통해 pytorch로 naive하게 (fused=False 옵션) 구현한 코드보다 gpu에서 병렬로 연산하도록 kernel로 구현한 triton이 더 빠름을 알 수 있습니다.
