@@ -41,13 +41,19 @@ python3 main.py
 
 ### Suspicious Point
 RoPE를 구현하는 과정에서 transformer_engine의 RoPE가 잘못 구현하였다고 생각되었던 부분이 있습니다.  
+
 ![RoPE](./RoPE.png)  
+
 위의 수식은 RoPE의 implementation 방법에 대한 수식 부분 입니다.  
 이처럼 cos term은 순서대로 head feature를 사용하지만 sin term은 even term과 odd term을 번갈아가며 연산하여야 옳은 계산이라고 볼 수 있습니다.  
 그러나 transformer_engine 및 이를 기반으로 똑같이 구현한 저의 코드는 아래의 수식과 같다고 이해됩니다.  
+
 ![equation](./equation.png)  
+
 이러한 의문을 가지고 찾아보던중 비슷한 의문을 가지는 [링크](https://github.com/vllm-project/vllm/issues/747)를 찾을 수 있었습니다.  
+
 ![question](./question.png)
+
 또한, huggingface의 [GPT-J](https://github.com/huggingface/transformers/blob/fe3c8ab1af558b95f67f5fafc0c55f09fd2b09db/src/transformers/models/gptj/modeling_gptj.py#L69) 및 [GPT-NEOX](https://github.com/huggingface/transformers/blob/fe3c8ab1af558b95f67f5fafc0c55f09fd2b09db/src/transformers/models/gpt_neox/modeling_gpt_neox.py#L368)의 RoPE 구현을 보면 둘의 구현이 다름을 알 수 있습니다.  
 위의 issue 링크에서는 GPT-NEOX의 구현이 맞는 것으로 결론을 내리고, 위의 실제 RoPE의 구현을 수식으로 풀어보니 논문에서는 (x_1,x_2) , (x_3,x_4) ... 등으로 pair를 짓지만 half_rotate 방식으로 RoPE를 구현한 코드는 (x_1,x_(d/2)) , (x_2,x_(d/2+1)) ... 등으로 pair가 이루어져 결국 seq에서 멀리 있을 수록 attention score가 적게 들어가는 영향을 똑같이 줌을 알 수 있었습니다.  
 실제로 transformer_engine의 [positional_embedding 부분의 freq 생성 부분](https://github.com/NVIDIA/TransformerEngine/blob/main/transformer_engine/pytorch/attention.py#L1077)을 보니 논문의 수식처럼 cos, sin이 붙어서 생성되는 것이 아니라 [ $m\theta_1,m\theta_2,...,m\theta_{d/2},m\theta_1,m\theta_2,...,m\theta_{d/2}$ ]와 같은 형태로 붙어 있어 rotation matrix가 형성됨을 볼 수 있었습니다. (결국 half rotate하는 방식이 맞았습니다.)
